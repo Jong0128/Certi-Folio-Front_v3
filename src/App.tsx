@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { MentorGrid } from './components/Mentors/MentorGrid';
 import { MentoringPage } from './components/Mentors/MentoringPage';
 import { Button } from './components/UI/Button';
@@ -6,6 +6,7 @@ import { SpecScore } from './components/Dashboard/SpecScore';
 import { SpecFlowTest } from './components/Spec/SpecFlowTest';
 import { InfoManagement } from './components/Spec/InfoManagement';
 import { LoginPage } from './components/Auth/LoginPage';
+import { AuthCallback } from './components/Auth/AuthCallback';
 import { SpecReport } from './components/Spec/SpecReport';
 import { JobDashboard } from './components/Jobs/JobDashboard';
 import { NotificationPage } from './components/Notifications/NotificationPage';
@@ -20,6 +21,8 @@ import { Navbar } from './components/Layout/Navbar';
 // Contexts
 import { useAuth } from './contexts/AuthContext';
 import { useApp } from './contexts/AppContext';
+import { portfolioApi } from './api/userApi';
+import { dashboardApi } from './api/analyticsApi';
 
 export const App: React.FC = () => {
   const {
@@ -36,13 +39,45 @@ export const App: React.FC = () => {
 
   const [line1Done, setLine1Done] = useState(false);
 
-  // Mock Certificates Data
-  const certificates = [
+  // Mock Certificates Data (폴백)
+  const MOCK_CERTIFICATES = [
     { name: '정보처리기사', date: '2023.06.15', expiry: '영구', type: 'cert', score: '합격' },
     { name: 'SQLD', date: '2023.09.20', expiry: '2025.09.20', type: 'cert', score: '우수' },
     { name: 'TOEIC', date: '2024.01.10', expiry: '2026.01.10', type: 'lang', score: '920점' },
     { name: 'AWS SA Associate', date: '2024.05.05', expiry: '2027.05.05', type: 'cert', score: 'Pass' },
   ];
+
+  const [certificates, setCertificates] = useState(MOCK_CERTIFICATES);
+  const [dashboardScore, setDashboardScore] = useState({ score: 78, percentile: 15 });
+
+  // 백엔드에서 대시보드 데이터 로드
+  useEffect(() => {
+    if (!isLoggedIn) return;
+    const loadDashboardData = async () => {
+      try {
+        const [certsRes, dashRes] = await Promise.allSettled([
+          portfolioApi.getCertificates(),
+          dashboardApi.getDashboard(),
+        ]);
+        if (certsRes.status === 'fulfilled' && Array.isArray(certsRes.value) && certsRes.value.length > 0) {
+          setCertificates(certsRes.value.map((c: any) => ({
+            name: c.name || c.certificateName || '',
+            date: c.acquiredDate || c.date || '',
+            expiry: c.expiryDate || c.expiry || '영구',
+            type: c.type || 'cert',
+            score: c.score || c.grade || '합격',
+          })));
+        }
+        if (dashRes.status === 'fulfilled' && dashRes.value) {
+          const d = dashRes.value;
+          if (d.score !== undefined) setDashboardScore({ score: d.score, percentile: d.percentile || 15 });
+        }
+      } catch (err) {
+        console.warn('대시보드 데이터 로드 실패:', err);
+      }
+    };
+    loadDashboardData();
+  }, [isLoggedIn]);
 
   // Enhanced Skills Data
   const skills = [
@@ -56,10 +91,7 @@ export const App: React.FC = () => {
     { name: 'Vercel', icon: '▲' },
   ];
 
-  const onLogin = () => {
-    handleLogin();
-    setCurrentView('home');
-  };
+
 
   const onLogout = () => {
     handleLogout();
@@ -170,8 +202,8 @@ export const App: React.FC = () => {
                   <div className="flex flex-col gap-8">
                     <div className="w-full">
                       <SpecScore
-                        score={hasData ? 78 : 0}
-                        percentile={hasData ? 85 : 0}
+                        score={hasData ? dashboardScore.score : 0}
+                        percentile={hasData ? dashboardScore.percentile : 0}
                         hasData={hasData}
                         onDiagnose={() => setCurrentView('flow-test')}
                         onShowReport={() => navigate('report')}
@@ -287,7 +319,14 @@ export const App: React.FC = () => {
         {/* VIEW 7: LOGIN PAGE */}
         {currentView === 'login' && (
           <div className="pt-20 flex-grow flex items-center justify-center">
-            <LoginPage onLogin={onLogin} />
+            <LoginPage />
+          </div>
+        )}
+
+        {/* VIEW: AUTH CALLBACK (OAuth 처리) */}
+        {currentView === 'auth-callback' && (
+          <div className="pt-20 flex-grow flex items-center justify-center">
+            <AuthCallback />
           </div>
         )}
 

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Button } from '../UI/Button';
 
-export type ViewType = 'home' | 'dashboard' | 'jobs' | 'login' | 'report' | 'flow-test' | 'info-management' | 'mentoring' | 'notifications' | 'admin-dashboard';
+export type ViewType = 'home' | 'dashboard' | 'jobs' | 'login' | 'report' | 'flow-test' | 'info-management' | 'mentoring' | 'notifications' | 'admin-dashboard' | 'auth-callback';
 
 interface NavbarProps {
     isLoggedIn: boolean;

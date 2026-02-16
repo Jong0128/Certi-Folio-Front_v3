@@ -22,7 +22,15 @@ export const useApp = () => {
 };
 
 export const AppProvider = ({ children }: { children: ReactNode }) => {
-    const [currentView, setCurrentView] = useState<ViewType>('home');
+    // URL 기반 초기 뷰 결정 (OAuth 콜백 처리)
+    const getInitialView = (): ViewType => {
+        if (window.location.pathname === '/auth/callback') {
+            return 'auth-callback';
+        }
+        return 'home';
+    };
+
+    const [currentView, setCurrentView] = useState<ViewType>(getInitialView());
     const [showAdmin, setShowAdmin] = useState(false);
     const [isMentorRegEnabled, setIsMentorRegEnabled] = useState(true);
 
