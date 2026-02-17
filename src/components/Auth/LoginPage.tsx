@@ -1,20 +1,22 @@
 import React from 'react';
 import { GlassCard } from '../UI/GlassCard';
 
-interface LoginPageProps {
-  onLogin: () => void;
-}
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
-export const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
+const handleOAuthLogin = (provider: 'kakao' | 'naver' | 'google') => {
+  window.location.href = `${API_BASE}/oauth2/authorization/${provider}`;
+};
+
+export const LoginPage: React.FC = () => {
   return (
     <div className="flex items-center justify-center min-h-[calc(100vh-160px)] px-4 animate-fade-in-up w-full">
       <GlassCard className="w-full max-w-md p-10 md:p-12 flex flex-col items-center justify-center text-center shadow-2xl border-white/80">
-        
+
         {/* Logo/Icon */}
         <div className="w-20 h-20 bg-gradient-to-tr from-cyan-400 to-purple-500 rounded-3xl flex items-center justify-center mb-8 shadow-xl shadow-purple-500/20">
-           <svg className="w-10 h-10 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
-           </svg>
+          <svg className="w-10 h-10 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+          </svg>
         </div>
 
         <h2 className="text-3xl font-extrabold text-gray-900 mb-3">로그인</h2>
@@ -22,19 +24,19 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
 
         <div className="w-full space-y-4">
           {/* Kakao Login */}
-          <button 
-            onClick={onLogin}
+          <button
+            onClick={() => handleOAuthLogin('kakao')}
             className="w-full flex items-center justify-center gap-3 py-4 rounded-2xl bg-[#FEE500] text-[#000000] font-bold text-base hover:bg-[#FDD835] transition-all shadow-sm group"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-               <path d="M12 3C5.925 3 1 6.925 1 11.75C1 14.85 2.975 17.55 5.925 19.075L4.725 23.55C4.6 24.025 5.125 24.375 5.525 24.1L10.775 20.625C11.175 20.675 11.575 20.7 12 20.7C18.075 20.7 23 16.775 23 11.95C23 7.125 18.075 3 12 3Z"/>
+              <path d="M12 3C5.925 3 1 6.925 1 11.75C1 14.85 2.975 17.55 5.925 19.075L4.725 23.55C4.6 24.025 5.125 24.375 5.525 24.1L10.775 20.625C11.175 20.675 11.575 20.7 12 20.7C18.075 20.7 23 16.775 23 11.95C23 7.125 18.075 3 12 3Z" />
             </svg>
             카카오로 시작하기
           </button>
 
           {/* Naver Login */}
-          <button 
-            onClick={onLogin}
+          <button
+            onClick={() => handleOAuthLogin('naver')}
             className="w-full flex items-center justify-center gap-3 py-4 rounded-2xl bg-[#03C75A] text-white font-bold text-base hover:bg-[#02b351] transition-all shadow-sm"
           >
             <span className="font-black text-lg">N</span>
@@ -42,8 +44,8 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
           </button>
 
           {/* Google Login */}
-          <button 
-            onClick={onLogin}
+          <button
+            onClick={() => handleOAuthLogin('google')}
             className="w-full flex items-center justify-center gap-3 py-4 rounded-2xl bg-white border border-gray-200 text-gray-700 font-bold text-base hover:bg-gray-50 transition-all shadow-sm"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -57,9 +59,9 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
         </div>
 
         <div className="mt-8 pt-6 border-t border-gray-100 w-full">
-            <p className="text-xs text-gray-400">
-                로그인 시 <span className="underline cursor-pointer hover:text-gray-600">이용약관</span> 및 <span className="underline cursor-pointer hover:text-gray-600">개인정보처리방침</span>에 동의하게 됩니다.
-            </p>
+          <p className="text-xs text-gray-400">
+            로그인 시 <span className="underline cursor-pointer hover:text-gray-600">이용약관</span> 및 <span className="underline cursor-pointer hover:text-gray-600">개인정보처리방침</span>에 동의하게 됩니다.
+          </p>
         </div>
 
       </GlassCard>

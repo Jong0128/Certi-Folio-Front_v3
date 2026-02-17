@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { MentorGrid } from './components/Mentors/MentorGrid';
 import { MentoringPage } from './components/Mentors/MentoringPage';
 import { Button } from './components/UI/Button';
@@ -6,6 +6,7 @@ import { SpecScore } from './components/Dashboard/SpecScore';
 import { SpecFlowTest } from './components/Spec/SpecFlowTest';
 import { InfoManagement } from './components/Spec/InfoManagement';
 import { LoginPage } from './components/Auth/LoginPage';
+import { AuthCallback } from './components/Auth/AuthCallback';
 import { SpecReport } from './components/Spec/SpecReport';
 import { JobDashboard } from './components/Jobs/JobDashboard';
 import { NotificationPage } from './components/Notifications/NotificationPage';
@@ -20,29 +21,54 @@ import { Navbar } from './components/Layout/Navbar';
 // Contexts
 import { useAuth } from './contexts/AuthContext';
 import { useApp } from './contexts/AppContext';
+import { portfolioApi } from './api/userApi';
+import { dashboardApi } from './api/analyticsApi';
 
 export const App: React.FC = () => {
   const {
-    isLoggedIn, setIsLoggedIn,
-    userData, handleLogin, handleLogout,
-    handleToggleData, hasData,
+    isLoggedIn,
+    userProfile,
+    handleLogout,
   } = useAuth();
 
   const {
     currentView, setCurrentView, navigate,
     showAdmin, setShowAdmin,
-    isMentorRegEnabled, setIsMentorRegEnabled,
   } = useApp();
 
   const [line1Done, setLine1Done] = useState(false);
 
-  // Mock Certificates Data
-  const certificates = [
-    { name: '정보처리기사', date: '2023.06.15', expiry: '영구', type: 'cert', score: '합격' },
-    { name: 'SQLD', date: '2023.09.20', expiry: '2025.09.20', type: 'cert', score: '우수' },
-    { name: 'TOEIC', date: '2024.01.10', expiry: '2026.01.10', type: 'lang', score: '920점' },
-    { name: 'AWS SA Associate', date: '2024.05.05', expiry: '2027.05.05', type: 'cert', score: 'Pass' },
-  ];
+  const [certificates, setCertificates] = useState<{ name: string, date: string, expiry: string, type: string, score: string }[]>([]);
+  const [dashboardScore, setDashboardScore] = useState({ score: 78, percentile: 15 });
+
+  // 백엔드에서 대시보드 데이터 로드
+  useEffect(() => {
+    if (!isLoggedIn) return;
+    const loadDashboardData = async () => {
+      try {
+        const [certsRes, dashRes] = await Promise.allSettled([
+          portfolioApi.getCertificates(),
+          dashboardApi.getDashboard(),
+        ]);
+        if (certsRes.status === 'fulfilled' && Array.isArray(certsRes.value) && certsRes.value.length > 0) {
+          setCertificates(certsRes.value.map((c: any) => ({
+            name: c.name || c.certificateName || '',
+            date: c.acquiredDate || c.date || '',
+            expiry: c.expiryDate || c.expiry || '영구',
+            type: c.type || 'cert',
+            score: c.score || c.grade || '합격',
+          })));
+        }
+        if (dashRes.status === 'fulfilled' && dashRes.value) {
+          const d = dashRes.value;
+          if (d.score !== undefined) setDashboardScore({ score: d.score, percentile: d.percentile || 15 });
+        }
+      } catch (err) {
+        console.warn('대시보드 데이터 로드 실패:', err);
+      }
+    };
+    loadDashboardData();
+  }, [isLoggedIn]);
 
   // Enhanced Skills Data
   const skills = [
@@ -56,10 +82,7 @@ export const App: React.FC = () => {
     { name: 'Vercel', icon: '▲' },
   ];
 
-  const onLogin = () => {
-    handleLogin();
-    setCurrentView('home');
-  };
+
 
   const onLogout = () => {
     handleLogout();
@@ -89,12 +112,6 @@ export const App: React.FC = () => {
       <AdminControlModal
         isOpen={showAdmin}
         onClose={() => setShowAdmin(false)}
-        isLoggedIn={isLoggedIn}
-        toggleLogin={() => setIsLoggedIn(!isLoggedIn)}
-        hasData={hasData}
-        toggleData={handleToggleData}
-        isMentorRegEnabled={isMentorRegEnabled}
-        toggleMentorReg={() => setIsMentorRegEnabled(!isMentorRegEnabled)}
         onNavigateToAdmin={() => navigate('admin-dashboard')}
       />
 
@@ -154,7 +171,7 @@ export const App: React.FC = () => {
 
               <section className="w-full text-center mb-12">
                 <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
-                  반가워요, <span className="text-cyan-600">{isLoggedIn ? (userData?.name || '김네온') : '게스트'}</span>님 👋
+                  반가워요, <span className="text-cyan-600">{isLoggedIn ? (userProfile?.name || userProfile?.nickname || '사용자') : '게스트'}</span>님 👋
                 </h1>
                 <p className="text-gray-500 mt-2">오늘도 목표 달성을 위해 한 걸음 더 나아가 볼까요?</p>
               </section>
@@ -170,14 +187,14 @@ export const App: React.FC = () => {
                   <div className="flex flex-col gap-8">
                     <div className="w-full">
                       <SpecScore
-                        score={hasData ? 78 : 0}
-                        percentile={hasData ? 85 : 0}
-                        hasData={hasData}
+                        score={userProfile?.isInfoInputted ? dashboardScore.score : 0}
+                        percentile={userProfile?.isInfoInputted ? dashboardScore.percentile : 0}
+                        isInfoInputted={userProfile?.isInfoInputted}
                         onDiagnose={() => setCurrentView('flow-test')}
                         onShowReport={() => navigate('report')}
                       />
                     </div>
-                    {hasData && (
+                    {userProfile?.isInfoInputted && (
                       <div className="bg-white/60 backdrop-blur-sm border border-white/60 rounded-2xl p-6 md:p-8 shadow-sm">
                         <div className="flex justify-between items-center mb-6">
                           <h3 className="text-lg font-bold text-gray-900">역량 포트폴리오</h3>
@@ -231,7 +248,7 @@ export const App: React.FC = () => {
                   </div>
                 </section>
 
-                {hasData && (
+                {userProfile?.isInfoInputted && (
                   <>
                     <div className="w-full h-px bg-gradient-to-r from-transparent via-gray-300/50 to-transparent" />
                     <section id="mentors">
@@ -279,7 +296,7 @@ export const App: React.FC = () => {
           <div className="relative w-full max-w-7xl mx-auto px-6 pt-36 pb-20">
             {!isLoggedIn && <FullPageLockOverlay onLogin={() => setCurrentView('login')} />}
             <div className={`${!isLoggedIn ? 'blur-md opacity-40 select-none pointer-events-none' : ''}`}>
-              <MentoringPage isRegistrationEnabled={isMentorRegEnabled} />
+              <MentoringPage />
             </div>
           </div>
         )}
@@ -287,7 +304,14 @@ export const App: React.FC = () => {
         {/* VIEW 7: LOGIN PAGE */}
         {currentView === 'login' && (
           <div className="pt-20 flex-grow flex items-center justify-center">
-            <LoginPage onLogin={onLogin} />
+            <LoginPage />
+          </div>
+        )}
+
+        {/* VIEW: AUTH CALLBACK (OAuth 처리) */}
+        {currentView === 'auth-callback' && (
+          <div className="pt-20 flex-grow flex items-center justify-center">
+            <AuthCallback />
           </div>
         )}
 
@@ -297,7 +321,6 @@ export const App: React.FC = () => {
             {!isLoggedIn && <FullPageLockOverlay onLogin={() => setCurrentView('login')} />}
             <div className={`pt-36 pb-12 transition-all duration-500 ${!isLoggedIn ? 'blur-md opacity-40 select-none pointer-events-none' : ''}`}>
               <SpecReport
-                userData={userData}
                 onGoToDashboard={() => setCurrentView('dashboard')}
                 onDiagnose={() => setCurrentView('flow-test')}
               />

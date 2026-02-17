@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Button } from '../UI/Button';
 
-export type ViewType = 'home' | 'dashboard' | 'jobs' | 'login' | 'report' | 'flow-test' | 'info-management' | 'mentoring' | 'notifications' | 'admin-dashboard';
+export type ViewType = 'home' | 'dashboard' | 'jobs' | 'login' | 'report' | 'flow-test' | 'info-management' | 'mentoring' | 'notifications' | 'admin-dashboard' | 'auth-callback';
 
 interface NavbarProps {
     isLoggedIn: boolean;
@@ -11,7 +11,10 @@ interface NavbarProps {
     onOpenAdmin: () => void;
 }
 
+import { useAuth } from '../../contexts/AuthContext';
+
 export const Navbar = ({ isLoggedIn, onLoginToggle, onNavigate, currentView, onOpenAdmin }: NavbarProps) => {
+    const { userProfile, userData } = useAuth();
     const [showNotif, setShowNotif] = useState(false);
     const [showProfileMenu, setShowProfileMenu] = useState(false);
     const notifRef = useRef<HTMLDivElement>(null);
@@ -64,13 +67,15 @@ export const Navbar = ({ isLoggedIn, onLoginToggle, onNavigate, currentView, onO
                 </div>
                 <div className="flex items-center gap-4">
 
-                    {/* Admin Button */}
-                    <button
-                        onClick={onOpenAdmin}
-                        className="text-xs font-bold text-gray-400 hover:text-gray-800 bg-gray-100 hover:bg-gray-200 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1"
-                    >
-                        ⚙️ 관리자
-                    </button>
+                    {/* Admin Button - only visible for admins */}
+                    {userProfile?.isAdmin && (
+                        <button
+                            onClick={onOpenAdmin}
+                            className="text-xs font-bold text-gray-400 hover:text-gray-800 bg-gray-100 hover:bg-gray-200 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1"
+                        >
+                            ⚙️ 관리자
+                        </button>
+                    )}
 
                     {isLoggedIn ? (
                         <>
@@ -124,10 +129,10 @@ export const Navbar = ({ isLoggedIn, onLoginToggle, onNavigate, currentView, onO
                                 {showProfileMenu && (
                                     <div className="absolute top-full right-0 mt-2 w-48 bg-white/95 backdrop-blur-xl rounded-xl shadow-xl border border-gray-100 overflow-hidden animate-fade-in-up origin-top-right z-50">
                                         <div className="p-4 border-b border-gray-50 flex items-center gap-3">
-                                            <img src="https://picsum.photos/50/50?random=99" className="w-8 h-8 rounded-full object-cover" alt="Profile" />
+                                            <img src={userProfile?.profileImage || "https://picsum.photos/50/50?random=99"} className="w-8 h-8 rounded-full object-cover" alt="Profile" />
                                             <div>
-                                                <p className="text-xs font-bold text-gray-900">김네온</p>
-                                                <p className="text-[10px] text-gray-500">neon@example.com</p>
+                                                <p className="text-xs font-bold text-gray-900">{userProfile?.name || userData?.name || '사용자'}</p>
+                                                <p className="text-[10px] text-gray-500">{userProfile?.email || 'email@example.com'}</p>
                                             </div>
                                         </div>
                                         <div className="py-1">

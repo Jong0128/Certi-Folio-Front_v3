@@ -1,16 +1,33 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode } from 'react';
+import { apiClient, ApiError } from '../api/client';
+
+interface UserProfile {
+    id: string;
+    name: string | null;
+    nickname: string | null;
+    email: string | null;
+    profileImage: string | null;
+    provider: string;
+    phone: string | null;
+    location: string | null;
+    university: string | null;
+    major: string | null;
+    year: string | null;
+    company: string | null;
+    bio: string | null;
+    isInfoInputted: boolean;
+    isAdmin: boolean;
+}
 
 interface AuthContextType {
     isLoggedIn: boolean;
     setIsLoggedIn: (value: boolean) => void;
-    userData: any;
-    setUserData: (data: any) => void;
-    mockDataEnabled: boolean;
-    setMockDataEnabled: (value: boolean) => void;
+    userProfile: UserProfile | null;
     handleLogin: () => void;
     handleLogout: () => void;
-    handleToggleData: () => void;
-    hasData: boolean;
+    handleOAuthCallback: (token: string) => Promise<void>;
+    token: string | null;
+    refreshProfile: () => Promise<UserProfile>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -23,78 +40,54 @@ export const useAuth = () => {
     return context;
 };
 
-const getStoredUserData = () => {
-    try {
-        const saved = localStorage.getItem('neon_spec_flow_data');
-        if (saved) {
-            return JSON.parse(saved);
-        }
-    } catch (e) {
-        console.error("Error loading data", e);
-    }
-    return null;
-};
-
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
-    const [mockDataEnabled, setMockDataEnabled] = useState(true);
-    const [userData, setUserData] = useState<any>(getStoredUserData());
+    const [token, setToken] = useState<string | null>(localStorage.getItem('access_token'));
+    const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
 
-    useEffect(() => {
-        const data = getStoredUserData();
-        setUserData(data);
-        setMockDataEnabled(!!data);
-    }, []);
+    const fetchUserProfile = async () => {
+        try {
+            const response = await apiClient.get('/api/user/me');
+            const profile: UserProfile = response.data || response;
+            setUserProfile(profile);
+            setIsLoggedIn(true);
+            console.log('[Auth] 유저 프로필 로드:', profile);
+            return profile;
+        } catch (err) {
+            if (err instanceof ApiError && err.status === 401) {
+                handleLogout();
+            }
+            throw err;
+        }
+    };
+
+    const handleOAuthCallback = async (newToken: string) => {
+        localStorage.setItem('access_token', newToken);
+        setToken(newToken);
+        await fetchUserProfile();
+    };
 
     const handleLogin = () => {
         setIsLoggedIn(true);
     };
 
     const handleLogout = () => {
+        localStorage.removeItem('access_token');
+        setToken(null);
+        setUserProfile(null);
         setIsLoggedIn(false);
     };
-
-    const handleToggleData = () => {
-        if (mockDataEnabled) {
-            localStorage.removeItem('neon_spec_flow_data');
-            setUserData(null);
-            setMockDataEnabled(false);
-        } else {
-            const mock = {
-                name: '김네온',
-                birthYear: '1999',
-                targetCompanyType: 'IT 서비스 기업',
-                targetJobRole: 'Frontend Developer',
-                schoolName: '한국대학교',
-                major: '소프트웨어학과',
-                degree: 'bachelor',
-                startDate: '2018.03',
-                endDate: '2024.02',
-                gpa: '4.1',
-                maxGpa: '4.5',
-                projects: [{ projectName: 'Certi-Folio', role: 'Frontend', techStack: ['React'] }],
-                certificates: [{ name: '정보처리기사', type: 'general' }]
-            };
-            localStorage.setItem('neon_spec_flow_data', JSON.stringify(mock));
-            setUserData(mock);
-            setMockDataEnabled(true);
-        }
-    };
-
-    const hasData = mockDataEnabled && !!userData;
 
     return (
         <AuthContext.Provider value={{
             isLoggedIn,
             setIsLoggedIn,
-            userData,
-            setUserData,
-            mockDataEnabled,
-            setMockDataEnabled,
+            userProfile,
             handleLogin,
             handleLogout,
-            handleToggleData,
-            hasData,
+            handleOAuthCallback,
+            token,
+            refreshProfile: fetchUserProfile,
         }}>
             {children}
         </AuthContext.Provider>

@@ -7,8 +7,6 @@ interface AppContextType {
     navigate: (view: ViewType) => void;
     showAdmin: boolean;
     setShowAdmin: (value: boolean) => void;
-    isMentorRegEnabled: boolean;
-    setIsMentorRegEnabled: (value: boolean) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -22,9 +20,15 @@ export const useApp = () => {
 };
 
 export const AppProvider = ({ children }: { children: ReactNode }) => {
-    const [currentView, setCurrentView] = useState<ViewType>('home');
+    const getInitialView = (): ViewType => {
+        if (window.location.pathname === '/auth/callback') {
+            return 'auth-callback';
+        }
+        return 'home';
+    };
+
+    const [currentView, setCurrentView] = useState<ViewType>(getInitialView());
     const [showAdmin, setShowAdmin] = useState(false);
-    const [isMentorRegEnabled, setIsMentorRegEnabled] = useState(true);
 
     const navigate = (view: ViewType) => {
         setCurrentView(view);
@@ -38,8 +42,6 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
             navigate,
             showAdmin,
             setShowAdmin,
-            isMentorRegEnabled,
-            setIsMentorRegEnabled,
         }}>
             {children}
         </AppContext.Provider>

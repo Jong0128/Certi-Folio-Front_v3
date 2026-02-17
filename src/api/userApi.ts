@@ -46,6 +46,10 @@ export const userApi = {
             body: formData,
         }).then(res => res.json());
     },
+
+    /** 기본 정보 업데이트 (이름, 정보 입력 완료 여부) - PATCH /api/user/basic-info */
+    updateBasicInfo: (data: { name: string; isInfoInputted?: boolean }) =>
+        apiClient.patch('/api/user/basic-info', data),
 };
 
 // ===== Portfolio =====
