@@ -8,7 +8,7 @@ import { ActivityFlow, ActivityData } from './ActivityFlow';
 import { CertificateFlow, CertificateData } from './CertificateFlow';
 import { CareerFlow, CareerData } from './CareerFlow';
 import { SpecReport } from './SpecReport';
-import { portfolioApi } from '../../api/userApi';
+import { portfolioApi, userApi } from '../../api/userApi';
 import { useAuth } from '../../contexts/AuthContext';
 
 // Define the full structure of the data we are collecting
@@ -76,11 +76,19 @@ const mainCategories = [
 ];
 
 export const SpecFlowTest: React.FC = () => {
-  const { isLoggedIn, token } = useAuth();
+  const { isLoggedIn, token, userProfile, refreshProfile } = useAuth();
   // State
   const [stage, setStage] = useState<FlowStage>('intro');
   const [isAnimating, setIsAnimating] = useState(false);
   const [solvedIdInput, setSolvedIdInput] = useState('');
+
+  // Check if user has already input info
+  useEffect(() => {
+    if (userProfile?.isInfoInputted && stage === 'intro') {
+      // If info inputted, show report (finished)
+      setStage('finished');
+    }
+  }, [userProfile, stage]);
 
   // Initialize Data
   const [userData, setUserData] = useState<FullUserData>(() => {
@@ -95,7 +103,7 @@ export const SpecFlowTest: React.FC = () => {
     return {
       targetCompanyType: '',
       targetJobRole: '',
-      name: '김네온',
+      name: userProfile?.name || '사용자',
       birthYear: '',
       academicStatus: '',
       schoolName: '',
@@ -230,8 +238,19 @@ export const SpecFlowTest: React.FC = () => {
     }, 500);
   };
 
-  const handleBasicInfoComplete = (data: any) => {
+  const handleBasicInfoComplete = async (data: any) => {
     setUserData(prev => ({ ...prev, ...data }));
+
+    // Save to Backend (Name & isInfoInputted)
+    if (isLoggedIn && data.name) {
+      try {
+        await userApi.updateBasicInfo({ name: data.name, isInfoInputted: true });
+        await refreshProfile();
+      } catch (e) {
+        console.error("Failed to update basic info", e);
+      }
+    }
+
     setStage('prompt_edu');
   };
 

@@ -35,8 +35,8 @@ const MOCK_SESSIONS = [
     }
 ];
 
-export const MentoringPage: React.FC<MentoringPageProps> = ({ isRegistrationEnabled = true }) => {
-    const { isLoggedIn, token } = useAuth();
+export const MentoringPage: React.FC<MentoringPageProps> = ({ isRegistrationEnabled }) => {
+    const { isLoggedIn, token, userProfile } = useAuth();
     const [viewMode, setViewMode] = useState<'dashboard' | 'all-mentors'>('dashboard');
     const [isRegistering, setIsRegistering] = useState(false);
 
@@ -138,8 +138,8 @@ export const MentoringPage: React.FC<MentoringPageProps> = ({ isRegistrationEnab
                             key={cat}
                             onClick={() => setSelectedCategory(cat)}
                             className={`px-5 py-2.5 rounded-full text-sm font-bold whitespace-nowrap transition-all ${selectedCategory === cat
-                                    ? 'bg-cyan-600 text-white shadow-lg shadow-cyan-500/30'
-                                    : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'
+                                ? 'bg-cyan-600 text-white shadow-lg shadow-cyan-500/30'
+                                : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'
                                 }`}
                         >
                             {cat}
@@ -203,8 +203,8 @@ export const MentoringPage: React.FC<MentoringPageProps> = ({ isRegistrationEnab
                                     <p className="text-xs text-gray-500">{session.role} @ {session.company}</p>
                                 </div>
                                 <span className={`px-2 py-1 rounded text-xs font-bold ${session.status === 'confirmed'
-                                        ? 'bg-green-100 text-green-700'
-                                        : 'bg-yellow-100 text-yellow-700'
+                                    ? 'bg-green-100 text-green-700'
+                                    : 'bg-yellow-100 text-yellow-700'
                                     }`}>
                                     {session.status === 'confirmed' ? '확정됨' : '승인 대기'}
                                 </span>
@@ -313,21 +313,19 @@ export const MentoringPage: React.FC<MentoringPageProps> = ({ isRegistrationEnab
                                 <div className="flex items-center gap-3 mb-2">
                                     <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center border border-gray-200">👨‍💻</div>
                                     <div>
-                                        <p className="text-sm font-bold text-gray-900">김네온</p>
-                                        <p className="text-xs text-gray-500">Google Korea / Senior Engineer</p>
+                                        <p className="text-sm font-bold text-gray-900">{userProfile?.name || '사용자'}</p>
+                                        <p className="text-xs text-gray-500">{userProfile?.company || '소속 미설정'} / {userProfile?.bio?.substring(0, 20) || '직무 미설정'}</p>
                                     </div>
                                 </div>
                                 <div className="flex gap-2 mt-3">
-                                    <span className="text-xs bg-white border border-gray-200 px-2 py-1 rounded font-medium text-gray-600">5년차</span>
-                                    <span className="text-xs bg-white border border-gray-200 px-2 py-1 rounded font-medium text-gray-600">React</span>
-                                    <span className="text-xs bg-white border border-gray-200 px-2 py-1 rounded font-medium text-gray-600">TypeScript</span>
+                                    <span className="text-xs bg-white border border-gray-200 px-2 py-1 rounded font-medium text-gray-600">{userProfile?.year || 'N년차'}</span>
                                 </div>
                             </div>
 
                             <div>
                                 <label className="text-xs font-bold text-gray-400 uppercase tracking-wider block mb-2">소개글</label>
                                 <p className="text-sm text-gray-700 bg-white p-4 rounded-xl border border-gray-200 leading-relaxed">
-                                    안녕하세요, 주니어 개발자들의 성장통을 해결해드리고 싶은 김네온입니다. 실무에서 겪는 다양한 문제들을 함께 고민하고 해결책을 찾아가고 싶습니다.
+                                    {userProfile?.bio || '아직 소개글이 없습니다. 프로필을 업데이트해주세요.'}
                                 </p>
                             </div>
 

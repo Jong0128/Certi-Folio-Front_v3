@@ -27,7 +27,7 @@ import { dashboardApi } from './api/analyticsApi';
 export const App: React.FC = () => {
   const {
     isLoggedIn, setIsLoggedIn,
-    userData, handleLogin, handleLogout,
+    userData, userProfile, handleLogin, handleLogout,
     handleToggleData, hasData,
   } = useAuth();
 
@@ -186,7 +186,7 @@ export const App: React.FC = () => {
 
               <section className="w-full text-center mb-12">
                 <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
-                  반가워요, <span className="text-cyan-600">{isLoggedIn ? (userData?.name || '김네온') : '게스트'}</span>님 👋
+                  반가워요, <span className="text-cyan-600">{isLoggedIn ? (userProfile?.name || userProfile?.nickname || userData?.name || '사용자') : '게스트'}</span>님 👋
                 </h1>
                 <p className="text-gray-500 mt-2">오늘도 목표 달성을 위해 한 걸음 더 나아가 볼까요?</p>
               </section>

@@ -15,6 +15,8 @@ interface UserProfile {
     year: string | null;
     company: string | null;
     bio: string | null;
+    isInfoInputted: boolean;
+    isAdmin: boolean;
 }
 
 interface AuthContextType {
@@ -61,20 +63,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
     const [mockDataEnabled, setMockDataEnabled] = useState(true);
     const [userData, setUserData] = useState<any>(getStoredUserData());
-
-    // 앱 시작 시: 저장된 토큰이 있으면 유저 프로필 가져오기
-    useEffect(() => {
-        const data = getStoredUserData();
-        setUserData(data);
-        setMockDataEnabled(!!data);
-
-        if (token) {
-            fetchUserProfile().catch(() => {
-                // 토큰 만료 등 → 로그아웃
-                handleLogout();
-            });
-        }
-    }, []);
 
     const fetchUserProfile = async () => {
         try {
@@ -155,6 +143,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             handleToggleData,
             hasData,
             token,
+            refreshProfile: fetchUserProfile,
         }}>
             {children}
         </AuthContext.Provider>
