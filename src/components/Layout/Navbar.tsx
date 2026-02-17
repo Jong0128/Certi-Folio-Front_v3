@@ -68,7 +68,7 @@ export const Navbar = ({ isLoggedIn, onLoginToggle, onNavigate, currentView, onO
                 <div className="flex items-center gap-4">
 
                     {/* Admin Button - only visible for admins */}
-                    {userProfile?.isAdmin && (
+                    {userProfile?.role === 'ADMIN' && (
                         <button
                             onClick={onOpenAdmin}
                             className="text-xs font-bold text-gray-400 hover:text-gray-800 bg-gray-100 hover:bg-gray-200 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1"
