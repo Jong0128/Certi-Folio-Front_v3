@@ -8,62 +8,29 @@ import { mentoringApplicationApi } from '../../api/mentoringApi';
 import { useAuth } from '../../contexts/AuthContext';
 
 interface MentoringPageProps {
-    isRegistrationEnabled?: boolean;
+    // TODO: 추후 백엔드에서 멘토 등록 on/off 상태를 받아올 예정
 }
 
-// Mock Sessions (폴백)
-const MOCK_SESSIONS = [
-    {
-        id: 1,
-        mentorName: '김서연',
-        role: 'Staff Engineer',
-        company: 'Google',
-        imageUrl: 'https://picsum.photos/100/100?random=1',
-        date: '2025.02.20 (목) 19:00',
-        status: 'confirmed',
-        topic: '커리어 전환 및 리더십 상담'
-    },
-    {
-        id: 2,
-        mentorName: '이준호',
-        role: 'Product Designer',
-        company: 'Airbnb',
-        imageUrl: 'https://picsum.photos/100/100?random=2',
-        date: '2025.02.25 (화) 20:00',
-        status: 'pending',
-        topic: '포트폴리오 리뷰'
-    }
-];
 
-export const MentoringPage: React.FC<MentoringPageProps> = ({ isRegistrationEnabled }) => {
+export const MentoringPage: React.FC<MentoringPageProps> = () => {
     const { isLoggedIn, token, userProfile } = useAuth();
     const [viewMode, setViewMode] = useState<'dashboard' | 'all-mentors'>('dashboard');
     const [isRegistering, setIsRegistering] = useState(false);
 
-    // Mock Mentor Application Status: 'none', 'pending', 'approved', 'rejected'
     const [appStatus, setAppStatus] = useState<'none' | 'pending' | 'approved'>('none');
 
-    // Reset status when registration is enabled via Admin to allow re-testing
-    useEffect(() => {
-        if (isRegistrationEnabled) {
-            setAppStatus('none');
-        }
-    }, [isRegistrationEnabled]);
 
-    // Modal States for this page
     const [activeModal, setActiveModal] = useState<'none' | 'app-detail'>('none');
     const [isChatOpen, setIsChatOpen] = useState(false);
     const [selectedChatTarget, setSelectedChatTarget] = useState<{ name: string, role: string, avatar: string, company?: string } | null>(null);
 
-    // Confirmation Modal State
     const [cancelSessionId, setCancelSessionId] = useState<number | null>(null);
 
     const [selectedCategory, setSelectedCategory] = useState('전체');
 
     const categories = ['전체', 'Frontend', 'Backend', 'AI/ML', 'DevOps', 'Product', 'Design', 'Career'];
 
-    // Manage sessions in state
-    const [sessions, setSessions] = useState(MOCK_SESSIONS);
+    const [sessions, setSessions] = useState<{ id: number, mentorName: string, role: string, company: string, imageUrl: string, date: string, status: string, topic: string }[]>([]);
 
     // 백엔드에서 보낸 신청 목록 로드
     useEffect(() => {
@@ -264,34 +231,32 @@ export const MentoringPage: React.FC<MentoringPageProps> = ({ isRegistrationEnab
                 </div>
             </section>
 
-            {/* Section 3: Apply as Mentor - Conditionally Rendered */}
-            {isRegistrationEnabled && (
-                <section className="mt-12">
-                    <div className="relative rounded-3xl overflow-hidden bg-gradient-to-r from-gray-900 to-gray-800 p-8 md:p-12 text-center md:text-left flex flex-col md:flex-row items-center justify-between gap-8 shadow-xl">
-                        {/* Background Pattern */}
-                        <div className="absolute top-0 right-0 -mt-10 -mr-10 w-64 h-64 bg-cyan-500 rounded-full mix-blend-overlay filter blur-3xl opacity-20"></div>
-                        <div className="absolute bottom-0 left-0 -mb-10 -ml-10 w-64 h-64 bg-purple-500 rounded-full mix-blend-overlay filter blur-3xl opacity-20"></div>
+            {/* Section 3: Apply as Mentor */}
+            <section className="mt-12">
+                <div className="relative rounded-3xl overflow-hidden bg-gradient-to-r from-gray-900 to-gray-800 p-8 md:p-12 text-center md:text-left flex flex-col md:flex-row items-center justify-between gap-8 shadow-xl">
+                    {/* Background Pattern */}
+                    <div className="absolute top-0 right-0 -mt-10 -mr-10 w-64 h-64 bg-cyan-500 rounded-full mix-blend-overlay filter blur-3xl opacity-20"></div>
+                    <div className="absolute bottom-0 left-0 -mb-10 -ml-10 w-64 h-64 bg-purple-500 rounded-full mix-blend-overlay filter blur-3xl opacity-20"></div>
 
-                        <div className="relative z-10">
-                            <h3 className="text-2xl md:text-3xl font-bold text-white mb-2">당신의 경험을 나눠주세요</h3>
-                            <p className="text-gray-300 text-sm md:text-base leading-relaxed">
-                                누군가에게는 당신의 조언이 인생을 바꾸는 터닝포인트가 될 수 있습니다.<br className="hidden md:block" />
-                                Certi-Folio의 멘토가 되어 미래의 인재들을 이끌어주세요.
-                            </p>
-                        </div>
-                        <div className="relative z-10 flex-shrink-0">
-                            <Button
-                                variant="neon"
-                                className="px-8 py-4 text-lg font-bold disabled:opacity-70 disabled:cursor-not-allowed"
-                                onClick={() => setIsRegistering(true)}
-                                disabled={appStatus !== 'none'}
-                            >
-                                {appStatus === 'none' ? '멘토로 등록하기 🚀' : (appStatus === 'pending' ? '심사 진행 중 🕒' : '멘토 활동 중 😎')}
-                            </Button>
-                        </div>
+                    <div className="relative z-10">
+                        <h3 className="text-2xl md:text-3xl font-bold text-white mb-2">당신의 경험을 나눠주세요</h3>
+                        <p className="text-gray-300 text-sm md:text-base leading-relaxed">
+                            누군가에게는 당신의 조언이 인생을 바꾸는 터닝포인트가 될 수 있습니다.<br className="hidden md:block" />
+                            Certi-Folio의 멘토가 되어 미래의 인재들을 이끌어주세요.
+                        </p>
                     </div>
-                </section>
-            )}
+                    <div className="relative z-10 flex-shrink-0">
+                        <Button
+                            variant="neon"
+                            className="px-8 py-4 text-lg font-bold disabled:opacity-70 disabled:cursor-not-allowed"
+                            onClick={() => setIsRegistering(true)}
+                            disabled={appStatus !== 'none'}
+                        >
+                            {appStatus === 'none' ? '멘토로 등록하기 🚀' : (appStatus === 'pending' ? '심사 진행 중 🕒' : '멘토 활동 중 😎')}
+                        </Button>
+                    </div>
+                </div>
+            </section>
 
             {/* --- MODALS --- */}
 

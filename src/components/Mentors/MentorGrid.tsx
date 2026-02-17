@@ -7,69 +7,6 @@ import { ChatModal } from './ChatModal';
 import { mentorApi, mentoringApplicationApi } from '../../api/mentoringApi';
 import { useAuth } from '../../contexts/AuthContext';
 
-// Mock Data (API 실패 시 폴백)
-const MOCK_MENTORS: Mentor[] = [
-    {
-        id: '1',
-        name: '김서연',
-        role: 'Staff Engineer',
-        company: 'Google',
-        imageUrl: 'https://picsum.photos/100/100?random=1',
-        bio: 'YC 창업자 출신 Staff Engineer. 프론트엔드 개발자의 커리어 성장과 리더십 전환을 돕습니다.',
-        skills: ['React', 'System Design', 'Leadership', 'Next.js', 'Career Path'],
-        available: true
-    },
-    {
-        id: '2',
-        name: '이준호',
-        role: 'Product Designer',
-        company: 'Airbnb',
-        imageUrl: 'https://picsum.photos/100/100?random=2',
-        bio: '마이크로 인터랙션과 디자인 시스템 전문가. 당신의 포트폴리오를 돋보이게 만들어 드립니다.',
-        skills: ['Figma', 'UI/UX', 'Prototyping', 'User Research', 'Design System'],
-        available: true
-    },
-    {
-        id: '3',
-        name: '박지민',
-        role: 'Senior PM',
-        company: 'Notion',
-        imageUrl: 'https://picsum.photos/100/100?random=3',
-        bio: '엔지니어가 PM처럼 생각하도록 돕습니다. 생산성 도구와 그로스 해킹 전문.',
-        skills: ['Product Strategy', 'Growth', 'Data Analysis', 'SQL', 'Roadmap'],
-        available: false
-    },
-    {
-        id: '4',
-        name: '최현우',
-        role: 'Tech Lead',
-        company: 'Netflix',
-        imageUrl: 'https://picsum.photos/100/100?random=4',
-        bio: '대규모 분산 시스템과 성능 최적화 전문. 백엔드 아키텍처 멘토링.',
-        skills: ['Node.js', 'AWS', 'Performance', 'Microservices', 'System Architecture'],
-        available: true
-    },
-    {
-        id: '5',
-        name: '정수민',
-        role: 'Data Scientist',
-        company: 'Kakao Brain',
-        imageUrl: 'https://picsum.photos/100/100?random=5',
-        bio: '최신 AI 트렌드와 LLM 활용법을 알려드립니다.',
-        skills: ['Python', 'PyTorch', 'LLM', 'Data Analysis', 'AI Ethics'],
-        available: true
-    },
-    {
-        id: '6',
-        name: '강민혁',
-        role: 'DevOps Engineer',
-        company: 'AWS',
-        imageUrl: 'https://picsum.photos/100/100?random=6',
-        bio: '클라우드 인프라 구축과 CI/CD 파이프라인 자동화.',
-        skills: ['Kubernetes', 'Terraform', 'CI/CD', 'AWS', 'Monitoring'],
-        available: true
-    }
-];
 
 interface MentorGridProps {
     limit?: number;
@@ -79,7 +16,7 @@ interface MentorGridProps {
 
 export const MentorGrid: React.FC<MentorGridProps> = ({ limit, showAll, filterCategory }) => {
     const { isLoggedIn, token } = useAuth();
-    const [mentors, setMentors] = useState<Mentor[]>(MOCK_MENTORS);
+    const [mentors, setMentors] = useState<Mentor[]>([]);
     const [selectedMentor, setSelectedMentor] = useState<Mentor | null>(null);
     const [activeModal, setActiveModal] = useState<'none' | 'detail' | 'apply'>('none');
     const [applyTopic, setApplyTopic] = useState('');
@@ -109,7 +46,7 @@ export const MentorGrid: React.FC<MentorGridProps> = ({ limit, showAll, filterCa
                     })));
                 }
             } catch (err) {
-                console.warn('멘토 API 호출 실패, Mock 데이터 사용:', err);
+                console.warn('멘토 API 호출 실패:', err);
             }
         };
         fetchMentors();

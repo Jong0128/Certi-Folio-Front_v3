@@ -13,19 +13,7 @@ interface Notification {
     read: boolean;
 }
 
-// 하드코딩 폴백 (비로그인 또는 API 실패 시)
-const MOCK_NOTIFICATIONS: Notification[] = [
-    { id: 1, type: 'job', title: '📢 네이버 채용 마감 임박', message: "관심 등록한 'FE 개발자 신입 공채'가 3일 뒤 마감됩니다.", createdAt: '1시간 전', read: false },
-    { id: 2, type: 'mentoring', title: '✅ 멘토링 승인 완료', message: "김서연 멘토님과의 멘토링이 확정되었습니다. 일정을 확인해주세요.", createdAt: '3시간 전', read: false },
-    { id: 3, type: 'system', title: '🎉 회원가입을 축하합니다', message: "Certi-Folio에 오신 것을 환영합니다! 스펙 입력을 시작해보세요.", createdAt: '1일 전', read: true },
-    { id: 4, type: 'job', title: '🔥 토스 채용 시작', message: "관심 직무인 'Frontend Developer' 채용이 시작되었습니다.", createdAt: '2일 전', read: true },
-    { id: 5, type: 'mentoring', title: '💬 새로운 메시지 도착', message: "이준호 멘토님이 메시지를 보냈습니다.", createdAt: '3일 전', read: true },
-    { id: 6, type: 'system', title: '🔒 보안 업데이트 안내', message: "개인정보 처리방침이 변경되었습니다. 확인해주세요.", createdAt: '4일 전', read: true },
-];
-
-// 상대 시간 포맷
 const formatRelativeTime = (dateStr: string) => {
-    // 이미 "N시간 전" 형식이면 그대로
     if (dateStr.includes('전')) return dateStr;
     try {
         const date = new Date(dateStr);
@@ -45,7 +33,7 @@ const formatRelativeTime = (dateStr: string) => {
 export const NotificationPage: React.FC = () => {
     const { isLoggedIn, token } = useAuth();
     const [filter, setFilter] = useState('all');
-    const [notifications, setNotifications] = useState<Notification[]>(MOCK_NOTIFICATIONS);
+    const [notifications, setNotifications] = useState<Notification[]>([]);
     const [loading, setLoading] = useState(false);
 
     // 백엔드에서 알림 불러오기
@@ -69,7 +57,7 @@ export const NotificationPage: React.FC = () => {
                 })));
             }
         } catch (err) {
-            console.warn('알림 API 호출 실패, Mock 데이터 사용:', err);
+            console.warn('알림 API 호출 실패:', err);
             // API 실패 시 mock 유지
         } finally {
             setLoading(false);
@@ -147,8 +135,8 @@ export const NotificationPage: React.FC = () => {
                         key={cat}
                         onClick={() => setFilter(cat)}
                         className={`px-5 py-2.5 rounded-full text-sm font-bold transition-all whitespace-nowrap ${filter === cat
-                                ? 'bg-gray-900 text-white shadow-lg shadow-gray-900/20'
-                                : 'bg-white border border-gray-200 text-gray-500 hover:bg-gray-50'
+                            ? 'bg-gray-900 text-white shadow-lg shadow-gray-900/20'
+                            : 'bg-white border border-gray-200 text-gray-500 hover:bg-gray-50'
                             }`}
                     >
                         {cat === 'all' ? '전체' : cat === 'job' ? '채용 정보' : cat === 'mentoring' ? '멘토링' : cat === 'certificate' ? '자격증' : '시스템'}
