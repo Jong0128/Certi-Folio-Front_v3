@@ -4,7 +4,7 @@ import { MentorRegistrationFlow } from './MentorRegistrationFlow';
 import { GlassCard } from '../UI/GlassCard';
 import { Button } from '../UI/Button';
 import { ChatModal } from './ChatModal';
-import { mentoringApplicationApi } from '../../api/mentoringApi';
+import { mentoringApplicationApi, mentorApi } from '../../api/mentoringApi';
 import { useAuth } from '../../contexts/AuthContext';
 
 interface MentoringPageProps {
@@ -23,6 +23,7 @@ export const MentoringPage: React.FC<MentoringPageProps> = () => {
     const [activeModal, setActiveModal] = useState<'none' | 'app-detail'>('none');
     const [isChatOpen, setIsChatOpen] = useState(false);
     const [selectedChatTarget, setSelectedChatTarget] = useState<{ name: string, role: string, avatar: string, company?: string } | null>(null);
+    const [chatMentorId, setChatMentorId] = useState<number>(0);
 
     const [cancelSessionId, setCancelSessionId] = useState<number | null>(null);
 
@@ -56,6 +57,15 @@ export const MentoringPage: React.FC<MentoringPageProps> = () => {
             }
         };
         fetchSentApplications();
+
+        // Check Mentor Application Status
+        mentorApi.getMyMentorProfile()
+            .then((res: any) => {
+                if (res.status === 'PENDING') setAppStatus('pending');
+                else if (res.status === 'APPROVED') setAppStatus('approved');
+            })
+            .catch(() => setAppStatus('none'));
+
     }, [isLoggedIn, token]);
 
     // Handle Cancel Session (Open Modal)
@@ -72,7 +82,8 @@ export const MentoringPage: React.FC<MentoringPageProps> = () => {
     };
 
     // Chat Handlers
-    const handleOpenChat = (name: string, role: string, avatar: string, company: string) => {
+    const handleOpenChat = (name: string, role: string, avatar: string, company: string, mentorId?: number) => {
+        setChatMentorId(mentorId || 0);
         setSelectedChatTarget({ name, role, avatar, company });
         setIsChatOpen(true);
     };
@@ -333,6 +344,7 @@ export const MentoringPage: React.FC<MentoringPageProps> = () => {
                 <ChatModal
                     isOpen={isChatOpen}
                     onClose={() => setIsChatOpen(false)}
+                    mentorId={chatMentorId}
                     target={selectedChatTarget}
                 />
             )}

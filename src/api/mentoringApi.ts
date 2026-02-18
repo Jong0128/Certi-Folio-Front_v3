@@ -22,10 +22,15 @@ export const mentorApi = {
 
     /** 멘토 신청 - POST /api/mentors/apply */
     applyMentor: (data: {
-        expertise?: string;
-        introduction?: string;
-        availableTime?: string;
-        skills?: string[];
+        name: string;
+        title: string;
+        company: string;
+        experience: string;
+        expertise: string[];
+        bio: string;
+        availability: string[];
+        preferredFormat: string;
+        certificates: string[];
     }) => apiClient.post('/api/mentors/apply', data),
 
     /** 내 멘토 프로필 조회 - GET /api/mentors/me */
@@ -43,7 +48,7 @@ export const mentoringApplicationApi = {
     /** 멘토링 신청 - POST /api/mentoring-applications */
     createApplication: (data: {
         mentorId: number;
-        message?: string;
+        description?: string;
         topic?: string;
     }) => apiClient.post('/api/mentoring-applications', data),
 
@@ -63,3 +68,28 @@ export const mentoringApplicationApi = {
     rejectApplication: (id: number, reason?: string) =>
         apiClient.post(`/api/mentoring-applications/${id}/reject`, reason ? { reason } : undefined),
 };
+
+// ===== Chat =====
+
+export const chatApi = {
+    /** 채팅방 생성 또는 기존 채팅방 조회 - POST /api/chat/rooms */
+    getOrCreateRoom: (mentorId: number) =>
+        apiClient.post('/api/chat/rooms', { mentorId }),
+
+    /** 내 채팅방 목록 조회 - GET /api/chat/rooms */
+    getMyChatRooms: () =>
+        apiClient.get('/api/chat/rooms'),
+
+    /** 채팅 기록 조회 - GET /api/chat/rooms/:id/messages */
+    getChatHistory: (chatRoomId: number) =>
+        apiClient.get(`/api/chat/rooms/${chatRoomId}/messages`),
+
+    /** 최근 메시지 조회 - GET /api/chat/rooms/:id/messages/recent */
+    getRecentMessages: (chatRoomId: number) =>
+        apiClient.get(`/api/chat/rooms/${chatRoomId}/messages/recent`),
+
+    /** 메시지 전송 (REST) - POST /api/chat/rooms/:id/send */
+    sendMessage: (chatRoomId: number, content: string) =>
+        apiClient.post(`/api/chat/rooms/${chatRoomId}/send`, { content }),
+};
+
