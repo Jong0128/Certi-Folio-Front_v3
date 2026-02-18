@@ -12,7 +12,7 @@ export const userApi = {
         apiClient.get('/api/user/me'),
 
     /** 기본 정보 업데이트 (이름, 정보 입력 완료 여부) - PATCH /api/user/basic-info */
-    updateBasicInfo: (data: { name: string; isInfoInputted?: boolean }) =>
+    updateBasicInfo: (data: { name: string; isInfoInputted?: boolean; birthYear?: string }) =>
         apiClient.patch('/api/user/basic-info', data),
 };
 
@@ -89,4 +89,21 @@ export const codingTestApi = {
     /** 코딩 테스트 정보 조회 - GET /api/coding-test */
     getCodingTest: () =>
         apiClient.get('/api/coding-test'),
+};
+
+// ===== Analytics (Career Preferences) =====
+export const analyticsApi = {
+    /** 
+     * 커리어 선호도 조회 - GET /api/analytics/preferences 
+     * Response: { success: true, preference: { jobRole, companyType, ... } }
+     */
+    getPreferences: () =>
+        apiClient.get('/api/analytics/preferences'),
+
+    /** 
+     * 커리어 선호도 저장 - POST /api/analytics/preferences 
+     * Request: { jobRole, companyType }
+     */
+    savePreferences: (data: { jobRole: string; companyType: string }) =>
+        apiClient.post('/api/analytics/preferences', data)
 };
