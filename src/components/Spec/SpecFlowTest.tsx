@@ -382,20 +382,12 @@ export const SpecFlowTest: React.FC = () => {
     // Save to Backend (Name, BirthYear & isInfoInputted + Career Preferences)
     if (isLoggedIn && data.name) {
       try {
-        // 1. Basic Info
-        await userApi.updateBasicInfo({
+        await userApi.saveOnboarding({
           name: data.name,
           birthYear: data.birthYear,
-          isInfoInputted: true,
+          jobRole: data.targetJobRole,
+          companyType: data.targetCompanyType,
         });
-
-        // 2. Career Preferences
-        if (data.targetJobRole || data.targetCompanyType) {
-          await analyticsApi.savePreferences({
-            jobRole: data.targetJobRole,
-            companyType: data.targetCompanyType,
-          });
-        }
 
         await refreshProfile();
       } catch (e) {

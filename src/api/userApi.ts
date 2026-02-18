@@ -14,6 +14,10 @@ export const userApi = {
     /** 기본 정보 업데이트 (이름, 정보 입력 완료 여부) - PATCH /api/user/basic-info */
     updateBasicInfo: (data: { name: string; isInfoInputted?: boolean; birthYear?: string }) =>
         apiClient.patch('/api/user/basic-info', data),
+
+    /** 온보딩: 이름, 출생연도, 희망 직무, 희망 기업 유형 한 번에 저장 - PATCH /api/user/onboarding */
+    saveOnboarding: (data: { name: string; birthYear?: string; jobRole?: string; companyType?: string }) =>
+        apiClient.patch('/api/user/onboarding', data),
 };
 
 // ===== Portfolio =====
