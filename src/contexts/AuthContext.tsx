@@ -16,7 +16,7 @@ interface UserProfile {
     company: string | null;
     bio: string | null;
     isInfoInputted: boolean;
-    isAdmin: boolean;
+    role: string;
 }
 
 interface AuthContextType {
