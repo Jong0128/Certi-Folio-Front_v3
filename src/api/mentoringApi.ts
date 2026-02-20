@@ -22,10 +22,15 @@ export const mentorApi = {
 
     /** 멘토 신청 - POST /api/mentors/apply */
     applyMentor: (data: {
-        expertise?: string;
-        introduction?: string;
-        availableTime?: string;
-        skills?: string[];
+        name: string;
+        title: string;
+        company?: string;
+        experience: string;
+        expertise: string[];
+        bio: string;
+        availability: string[];
+        preferredFormat: string;
+        certificates?: string[];
     }) => apiClient.post('/api/mentors/apply', data),
 
     /** 내 멘토 프로필 조회 - GET /api/mentors/me */
